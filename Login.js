@@ -41,7 +41,7 @@ io.sockets.on('connection', function (socket) {
 			});
 		}
 		var connect_status = 0;
-		findEmail(data, function(err, contents){
+		findEmail(data, function(err, useremail){
 			if (err) {
 				socket.emit('login',{
 					connect_status: 0
@@ -49,7 +49,7 @@ io.sockets.on('connection', function (socket) {
 			} else {
 				if(contents.length>0){
 					function socketinput(callback){//소켓 설정
-							socket.username=useremail;
+							socket.useremail=useremail;
 								socket.key=random();
 								callback(socket.key);
 					}
