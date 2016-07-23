@@ -62,11 +62,12 @@ logger.info("numusers.txt"+(err ? 'no access!' : 'can read/write'));
 7. 언제든 채팅해도 괜찮습니다 버튼
 
 */
+
+var people = new Array();
 io.sockets.on('connection', function (socket) {//소켓 연결
-	var people = new Array();
 	//on:메시지 받기
 	//emit:메시지 전송
-	socket.emit('new_message',{message:'Room_Connected'});
+	socket.emit('chat_message',{message:'Room_Connected'});
 	var data;
 	socket.on('sign_in',function(userdata_from){
 		data = {
@@ -74,19 +75,43 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 		userkey: userdata_from[1]
 	}
 	userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {
+		var poolresult=rows;//이거 필요한지?(테스트해봐야)
+	userListPool.release();
 		if (err||!rows[0].isConnect) {
-			Logger.
-		} else {
-		}
-		userListPool.release();
-	});
-	socket.set('username',contents,function(err){});
-	socket.set('key',data.userkey,function(err){});
+			//Logger써서 에러출력
+		} else if(data.userkey != rows[0].isConnect){
+			//로그인 실패(공격시도) -> 해당 ip 차단(일시적)
+		} else{
+		idgen(null,1,function(id){
+			socket.id=id;
+		});
+		socket.useremail = data.useremail;
+		socket.key = data.userkey;
+		socket.emit('chat_message',{connect_status:1, duck:poolresult[0].countDuck,roomcount:poolresult[0].countRoom});
+		socket.emit('room_person',{room1:poolresult[0].Room_1, room2:poolresult[0].Room_2, room3:poolresult[0].Room_3, room4:poolresult[0].Room_4, room5:poolresult[0].Room_5})
+		socket.on('chat_message',function(Message){
 
-	socket.on('people',function(msg){//
-		socket.broadcast.emit('people',{message: msg});
+		});
+		}
 	});
 		//반대편 사람과 연결
 	});
 });
-})
+function idgen(id,status,callback){//status 0:로그아웃, 1:반대
+	var output=0;
+	if(status){
+		for(var i=0;i<people.length;i++){
+			if(people[i]==0){
+				people[i]=1;
+				callback(i);
+				break;
+			}
+		}
+			people[people.length]=1;
+			callback(people.length);
+	}
+	else{
+		people[id]=0;
+		callback(id);
+	}
+}

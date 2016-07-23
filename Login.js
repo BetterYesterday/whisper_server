@@ -60,6 +60,7 @@ io.sockets.on('connection', function (socket) {
 										pushemail: useremail
 										yourkey: key
 								});
+								userListPool.release();
 							});
 					});
 
