@@ -53,14 +53,15 @@ io.sockets.on('connection', function (socket) {
 			} else {
 				if(contents.length>0){
 						socket.set('username',useremail,function(err){
-							socket.emit('login',{
-								connect_status: 1,
-								pushemail: useremail
-							});
 							socket.set('key',random(),function(err){
 								socket.get('key',function(err,key){
-									socket.emit('key', {yourkey: key});
-									userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail]);
+									userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function{
+										socket.emit('login',{
+											connect_status: 1,
+											pushemail: useremail
+											yourkey: key
+										});
+									});
 								});
 							});
 
@@ -79,7 +80,9 @@ io.sockets.on('connection', function (socket) {
 	socket.on('disconnect',function(){
 		socket.get('username',function(err,username){
 			if(!(!username)){
-
+			}
+			else{
+			userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,useremail]);
 			}
 		});
 	});
