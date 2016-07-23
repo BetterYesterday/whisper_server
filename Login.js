@@ -52,21 +52,25 @@ io.sockets.on('connection', function (socket) {
 				});
 			} else {
 				if(contents.length>0){
-						socket.set('username',useremail,function(err){
-							socket.set('key',random(),function(err){
-								socket.get('key',function(err,key){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function{
-										socket.emit('login',{
-											connect_status: 1,
-											pushemail: useremail
-											yourkey: key
-										});
-									});
+					function socketinput(callback){
+							socket.username=useremail;
+								socket.key=random();
+								callback(socket.key);
+
+					}
+					socketinput(function(key){
+
+							userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function{
+									socket.emit('login',{
+										connect_status: 1,
+										pushemail: useremail
+										yourkey: key
 								});
 							});
-
-
 					});
+
+
+
 				} else if(contents.length == 0) {
 					socket.emit('login',{
 						connect_status: 0,

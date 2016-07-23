@@ -73,14 +73,20 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 		useremail: userdata_from[0],
 		userkey: userdata_from[1]
 	}
+	userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {
+		if (err||!rows[0].isConnect) {
+			Logger.
+		} else {
+		}
+		userListPool.release();
+	});
 	socket.set('username',contents,function(err){});
 	socket.set('key',data.userkey,function(err){});
-	});
-	socket.on('people',function(msg){//
 
+	socket.on('people',function(msg){//
 		socket.broadcast.emit('people',{message: msg});
+	});
 		//반대편 사람과 연결
 	});
-	socket.on('')
 });
 })
