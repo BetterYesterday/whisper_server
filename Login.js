@@ -61,7 +61,6 @@ io.sockets.on('connection', function (socket) {
 								socket.get('key',function(err,key){
 									socket.emit('key', {yourkey: key});
 									userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail]);
-									socket.connect()
 								});
 							});
 
@@ -80,7 +79,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('disconnect',function(){
 		socket.get('username',function(err,username){
 			if(!(!username)){
-				
+
 			}
 		});
 	});
