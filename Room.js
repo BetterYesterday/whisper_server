@@ -6,9 +6,19 @@ var io = require('socket.io')(Loginserver);
 var path = require('path');
 var port = 20902;
 var apacheroot = "/home/ubuntu/www/html/"
-var sqlite = require('sqlite3').verbose();
-var db = new sqlite.Database('./UserList.db');
+
 var Logger = require('logger.js');
+
+var redis = require('redis');
+var redisclient = redis.createClient();
+
+var mysql = require('mysql');
+var userListPool = mysql.createPool({
+	host: 'localhost',
+	user: 'root',
+	password: 'Despair$667',
+	database: 'UserList'
+});
 
 logger = new Logger('room.log');
 
@@ -57,6 +67,15 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 	//on:메시지 받기
 	//emit:메시지 전송
 	socket.emit('new_message',{message:'Room_Connected'});
+	var data;
+	socket.on('sign_in',function(userdata_from){
+		data = {
+		useremail: userdata_from[0],
+		userkey: userdata_from[1]
+	}
+	socket.set('username',contents,function(err){});
+	socket.set('key',data.userkey,function(err){});
+	});
 	socket.on('people',function(msg){//
 
 		socket.broadcast.emit('people',{message: msg});

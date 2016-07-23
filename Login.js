@@ -45,25 +45,26 @@ io.sockets.on('connection', function (socket) {
 			});
 		}
 		var connect_status
-		findEmail(data, function(err, contents){
+		findEmail(data, function(err, useremail){
 			if (err) {
 				socket.emit('login',{
 					connect_status: 0
 				});
 			} else {
 				if(contents.length>0){
-					socket.emit('login',{
-						connect_status: 1,
-						pushemail: contents
-						socket.set('username',contents,function(err){
+						socket.set('username',useremail,function(err){
+							socket.emit('login',{
+								connect_status: 1,
+								pushemail: useremail
+							});
 							socket.set('key',random(),function(err){
 								socket.get('key',function(err,key){
 									socket.emit('key', {yourkey: key});
-									userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =?',[key]);
+									userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail]);
 									socket.connect()
 								});
 							});
-						});
+
 
 					});
 				} else if(contents.length == 0) {
@@ -73,6 +74,13 @@ io.sockets.on('connection', function (socket) {
 					});
 				}
 				//userListPool.
+			}
+		});
+	});
+	socket.on('disconnect',function(){
+		socket.get('username',function(err,username){
+			if(!(!username)){
+				
 			}
 		});
 	});
