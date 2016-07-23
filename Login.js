@@ -48,14 +48,12 @@ io.sockets.on('connection', function (socket) {
 				});
 			} else {
 				if(contents.length>0){
-					function socketinput(callback){
+					function socketinput(callback){//소켓 설정
 							socket.username=useremail;
 								socket.key=random();
 								callback(socket.key);
-
 					}
 					socketinput(function(key){
-
 							userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function{
 									socket.emit('login',{
 										connect_status: 1,
@@ -77,16 +75,14 @@ io.sockets.on('connection', function (socket) {
 		});
 	});
 	socket.on('disconnect',function(){
-		socket.get('username',function(err,username){
-			if(!(!username)){
+			if(!(!socket.username)){
 			}
 			else{
-			userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,useremail]);
+			userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,socket.useremail]);
 			}
-		});
 	});
 	socket.on('sign_up',function(userdata_from)){
-		function 
+		function
 	}
 });
 function random () {
