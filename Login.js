@@ -6,34 +6,81 @@ var io = require('socket.io')(Loginserver);
 var path = require('path');
 var port = 20901;
 
-var sqlite = require('sqlite3').verbose();
-var db = new sqlite.Database('./UserList.db');
+var mysql = require('mysql');
+var userListPool = mysql.createPool({
+	host: 'localhost',
+	user: 'root',
+	password: 'Despair$667',
+	database: 'UserList'
+});
 
 Loginserver.listen(port);
+
+/*connection.connect(function(err) {
+    if (err) {
+        console.error('mysql connection error');
+        console.error(err);
+        throw err;
+    }
+});*/
 
 // Routing
 app.use(express.static(path.join(__dirname,'public')));
 
 // Login code
 io.sockets.on('connection', function (socket) {
-	socket.on('sign_in',function(useremail_from){
-		socket.emit('testmessage',{
-			test: useremail_from
-		});
-		db.all('SELECT useremail FROM UserList WHERE useremail=$id',{
-			$id: useremail_from
-		},function(err,rows){
-			if(rows != null){
+	socket.on('sign_in',function(userdata_from){
+		var data = {
+			useremail: userdata_from[0],
+			userpassword: userdata_from[1]
+		}
+		function findEmail(data, callback){
+			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {
+				if (err) {
+					callback(err,null);
+				} else {
+					callback(null,rows[0].Email);
+				}
+				userListPool.release();
+			});
+		}
+		var connect_status
+		findEmail(data, function(err, contents){
+			if (err) {
 				socket.emit('login',{
-					isSuccess: 1
+					connect_status: 0
 				});
-			}
-			else{
-				socket.emit('login',{
-					isSuccess: 0
-				});
+			} else {
+				if(contents.length>0){
+					socket.emit('login',{
+						connect_status: 1,
+						pushemail: contents
+						socket.set('username',contents,function(err){
+							socket.set('key',random(),function(err){
+								socket.get('key',function(err,key){
+									socket.emit('key', {yourkey: key});
+									userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =?',[key]);
+									socket.connect()
+								});
+							});
+						});
+
+					});
+				} else if(contents.length == 0) {
+					socket.emit('login',{
+						connect_status: 0,
+						pushemail: contents
+					});
+				}
+				//userListPool.
 			}
 		});
 	});
-	
-})
+});
+function random () {
+	var RandomNumber=0;
+	while(RandomNumber==0)
+	 RandomNumber=Math.random() * (127+128) -128;
+  return RandomNumber;
+
+}

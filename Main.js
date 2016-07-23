@@ -6,9 +6,6 @@ var io = require('socket.io')(Chatserver);
 var path = require('path');
 var port = 20900;
 
-var sqlite = require('sqlite3').verbose();
-var db = new sqlite.Database('./UserList.db');
-
 Chatserver.listen(port);
 
 // Routing
@@ -16,6 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Manager_code
 var numUsers = 0;
+
 io.sockets.on('connection', function (socket) {
 	socket.emit('new_message',{
 		message: 'Login'
@@ -29,6 +27,6 @@ io.sockets.on('connection', function (socket) {
 		});
 	});
 	socket.on('logined',function(username){
-
+		
 	});
 });
