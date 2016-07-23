@@ -30,12 +30,8 @@ app.use(express.static(path.join(__dirname,'public')));
 // Login code
 io.sockets.on('connection', function (socket) {
 	socket.on('sign_in',function(userdata_from){
-		var data = {
-			useremail: userdata_from[0],
-			userpassword: userdata_from[1]
-		}
 		function findEmail(data, callback){
-			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {
+			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',userdata_from,function(err,rows) {
 				if (err) {
 					callback(err,null);
 				} else {
@@ -44,8 +40,8 @@ io.sockets.on('connection', function (socket) {
 				userListPool.release();
 			});
 		}
-		var connect_status
-		findEmail(data, function(err, useremail){
+		var connect_status = 0;
+		findEmail(data, function(err, contents){
 			if (err) {
 				socket.emit('login',{
 					connect_status: 0
@@ -72,7 +68,6 @@ io.sockets.on('connection', function (socket) {
 						pushemail: contents
 					});
 				}
-				//userListPool.
 			}
 		});
 	});
@@ -83,6 +78,9 @@ io.sockets.on('connection', function (socket) {
 			}
 		});
 	});
+	socket.on('sign_up',function(userdata_from)){
+		function 
+	}
 });
 function random () {
 	var RandomNumber=0;
