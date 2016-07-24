@@ -54,7 +54,7 @@ io.sockets.on('connection', function (socket) {
 								callback(socket.key);
 					}
 					socketinput(function(key){
-							userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function{
+							userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function(){
 									socket.emit('login',{
 										connect_status: 1,
 										pushemail: useremail
