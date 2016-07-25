@@ -62,7 +62,9 @@ logger.info("numusers.txt"+(err ? 'no access!' : 'can read/write'));
 7. 언제든 채팅해도 괜찮습니다 버튼
 
 */
-
+redisclient.on('error',function(err){
+	console.log('Error'+err);
+});
 var people = new Array();
 io.sockets.on('connection', function (socket) {//소켓 연결
 	//on:메시지 받기
@@ -82,36 +84,80 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 		} else if(data.userkey != rows[0].isConnect){
 			//로그인 실패(공격시도) -> 해당 ip 차단(일시적)
 		} else{
-		idgen(null,1,function(id){
-			socket.id=id;
-		});
-		socket.useremail = data.useremail;
+		socket.id = data.useremail;
 		socket.key = data.userkey;
 		socket.emit('chat_message',{connect_status:1, duck:poolresult[0].countDuck,roomcount:poolresult[0].countRoom});
 		socket.emit('room_person',{room1:poolresult[0].Room_1, room2:poolresult[0].Room_2, room3:poolresult[0].Room_3, room4:poolresult[0].Room_4, room5:poolresult[0].Room_5})
-		socket.on('chat_message',function(Message){
+		socket.on('room',function(command){
+			var ifwantchat=true;
+			var timercontinues=false;
+			var wantchat;
+			if(command==0){
+				ifwantchat=false;//사용자가 장난치는걸 막음.(쿼리문 성능 관련)
+				if(wantchat){
+					userListPool.query('UPDATE isConnect FROM UserInfo SET isWantChat =? WHERE Email =?',[0,socket.id],function(){
+					redisclient.get("isWantChatList",function(err,reply){
+						var tempreply=new Array();
+						tempreply=reply.delete(reply.indexOf(socket.id));
 
+					/*	var tempreply;
+						if(reply=null||reply==undefined){
+							tempreply=new Array();
+						}
+						else{
+							tempreply==reply;
+						}
+						tempreply[tempreply.length]=data.useremail
+					redisclient.set("isWantChatList",data.useremail);*/
+						wantchat=0;
+					});
+					});
+				}
+			}
+			if(command==1){//wantchat박스 활성화(언제든 괜찮)
+				ifwantchat=true;
+				if(!timercontinues){//타이머 진행 중 중복 실행을 막음
+					timercontinues=true;
+				settimeout(function(){
+					if(!ifwantchat){
+						break;
+					}
+					userListPool.query('UPDATE isConnect FROM UserInfo SET isWantChat =? WHERE Email =?',[1,socket.id],function(){
+					redisclient.get("isWantChatList",function(err,reply){
+						if(reply=null||reply==undefined){
+						tempreply=new Array();
+					}
+					else{
+						tempreply==reply;
+					}
+					tempreply=tempreply.push(socket.id);
+					redisclient.set("isWantChatList",tempreply);//안되면 join으로 String형태로 바꿔넣음
+					timercontinues=false;
+					wantchat=1;
+					});
+					});
+				},3000);
+			}
+		}else if(command==2){//nowchat버튼 클릭시(지금 채팅)
+
+		}
+		});
+		if(poolresult[0].Room_1){
+
+		}if(poolresult[0].Room_2){
+
+		}if(poolresult[0].Room_3){
+
+		}if(poolresult[0].Room_4){
+
+		}if(poolresult[0].Room_5){
+
+		}
+		socket.on('chat_message',function(Message){//{to:누구 message:내용}
+			redisclient.
 		});
 		}
 	});
 		//반대편 사람과 연결
 	});
 });
-function idgen(id,status,callback){//status 0:로그아웃, 1:반대
-	var output=0;
-	if(status){
-		for(var i=0;i<people.length;i++){
-			if(people[i]==0){
-				people[i]=1;
-				callback(i);
-				break;
-			}
-		}
-			people[people.length]=1;
-			callback(people.length);
-	}
-	else{
-		people[id]=0;
-		callback(id);
-	}
-}

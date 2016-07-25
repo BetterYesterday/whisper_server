@@ -41,13 +41,13 @@ io.sockets.on('connection', function (socket) {
 						socket.useremail=useremail;
 							socket.key=random();
 							callback(socket.key);
-					}
+					}:
 					socketinput(function(key) {
 						userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function{
-								socket.emit('login',{
-									connect_status: 1,
-									pushemail: useremail,
-									yourkey: key
+							socket.emit('login',{
+								connect_status: 1,
+								pushemail: useremail,
+								yourkey: key
 							});
 							userListPool.release();
 						});
