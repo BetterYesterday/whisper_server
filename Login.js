@@ -61,18 +61,35 @@ io.sockets.on('connection', function (socket) {
 			}
 		});
 	});
-	socket.on('disconnect',function(){
-			if(!(!socket.username)){
-			}else{
-			userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,socket.useremail]);
-			}
-	});
 	socket.on('sign_up',function(userdata_from){
+		function sign_up(data,callback){
+			userListPool.query('INSERT INTO UserInfo (Email, Password, isConnect, countDuck, countRoom) VALUES (?, ?, 0, 0)',[useremail,userpassword],function(err,results){
+				if (err) {
+					throw err;
+					socket.emit('sign_up',{
+						connect_status: 0
+					});
+				} else { 
+					socket.emit('sign_up',{
+						connect_status: 1
+					});
+					userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function{
+						socket.emit('login',{
+							connect_status: 1,
+							pushemail: useremail,
+							yourkey: key
+						});
+						userListPool.release();
+					})
+				}
+				userListPool.release();
+			});
+		}
 	});
 	socket.on('check_email',function(useremail_from){
 		function check_email(data, callback){
 			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',useremail_from,function(err,rows){
-				if(err){
+				if(err){ㄱ
 					callback(err,null);
 				}else{
 					callback(null,rows[0].Email);
@@ -82,22 +99,26 @@ io.sockets.on('connection', function (socket) {
 		}
 		check_email(data, function(err, useremail){
 			if(err){
-				socket.emit('email_check',{
+				socket.emit('check_email',{
 					connect_status: 0
 				});
 			}else{
 				if(useremail.length>0){
-					socket.emit('email_check',{
+					socket.emit('check_email',{
 						connect_status: 0
 					});
 				}else if(!useremail.length){
-					socket.emit('email_check',{
+					socket.emit('check_email',{
 						connect_status: 1,
 						pushemail: useremail
 					});
 				}
 			}
 		});
+	});
+	socket.on('disconnect',function(){
+		if(!(!socket.username))
+		else userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,socket.useremail])	
 	});
 });
 function random () {
