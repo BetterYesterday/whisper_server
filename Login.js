@@ -69,7 +69,7 @@ io.sockets.on('connection', function (socket) {
 					socket.emit('sign_up',{
 						connect_status: 0
 					});
-				} else { 
+				} else {
 					socket.emit('sign_up',{
 						connect_status: 1
 					});
@@ -89,7 +89,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('check_email',function(useremail_from){
 		function check_email(data, callback){
 			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',useremail_from,function(err,rows){
-				if(err){ㄱ
+				if(err){
 					callback(err,null);
 				}else{
 					callback(null,rows[0].Email);
@@ -118,7 +118,7 @@ io.sockets.on('connection', function (socket) {
 	});
 	socket.on('disconnect',function(){
 		if(!(!socket.username))
-		else userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,socket.useremail])	
+		else userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,socket.useremail])
 	});
 });
 function random () {

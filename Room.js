@@ -1,11 +1,9 @@
 // Setup
 var express = require('express');
 var app = express();
-var Loginserver = require('http').createServer(app);
-var io = require('socket.io')(Loginserver);
-var path = require('path');
+var Roomserver = require('http').createServer(app);
+var io = require('socket.io')(Roomserver);
 var port = 20902;
-var apacheroot = "/home/ubuntu/www/html/"
 
 var Logger = require('logger.js');
 
@@ -22,46 +20,11 @@ var userListPool = mysql.createPool({
 
 logger = new Logger('room.log');
 
-Chatserver.listen(port);
+Roomserver.listen(port);
 
 // Routing
 app.use(express.static(path.join(__dirname, 'public')));
-/*
-// Chatroom_code
-var numUsers = 0;
-fs.access(apacheroot+"numUsers.txt", (fs.R_OK | fs.W_OK),	function(err){
-logger.info("numusers.txt"+(err ? 'no access!' : 'can read/write'));
-	if(err){
-		fs.access(apacheroot+"numUsers.txt",fs.F_OK,function(err){
-		logger.info("numusers.txt"+(err ? 'no File!' : 'no Permission!'));
-				if(err){
-					fs.writeFile(apacheroot+"numUsers.txt", '0', function(err){
-  					if (err) throw err;
-						logger.info('It\'s saved!');
-					});
-				}
-				else{
-							fs.chmodSync(apacheroot+"numUsers.txt", 777);
-				}
-		})
-	}
-	else{
-		fs.readFile(apacheroot+"numUsers.txt",function(err,data){
-			numUsers = data;
-			//numusers를 받아온뒤에 실행
-	}
-});
-*/
-/*
-1. 상대의 접속여부를 체크
-2. 메시지를 상대방에게 그대로 전송 및 서버에 저장
-3. 상대방 숫자아이디를 db에 저장했다가 접속 시 상대방에게 접속 정보를 송신
-4. 상대방이 비접속 시 아무짓도 하지 않음.
-5. 닉네임을 db에 저장/변경 사항이 있을 시 알려줌
-6. 지금 채팅하고 싶습니다 버튼
-7. 언제든 채팅해도 괜찮습니다 버튼
 
-*/
 redisclient.on('error',function(err){
 	console.log('Error'+err);
 });
@@ -87,7 +50,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 		socket.id = data.useremail;
 		socket.key = data.userkey;
 		socket.emit('chat_message',{connect_status:1, duck:poolresult[0].countDuck,roomcount:poolresult[0].countRoom});
-		socket.emit('room_person',{room1:poolresult[0].Room_1, room2:poolresult[0].Room_2, room3:poolresult[0].Room_3, room4:poolresult[0].Room_4, room5:poolresult[0].Room_5})
+		socket.emit('chat_message',{room1:poolresult[0].Room_1, room2:poolresult[0].Room_2, room3:poolresult[0].Room_3, room4:poolresult[0].Room_4, room5:poolresult[0].Room_5})
 		socket.on('room',function(command){
 			var ifwantchat=true;
 			var timercontinues=false;
@@ -97,10 +60,8 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 				if(wantchat){
 					userListPool.query('UPDATE isConnect FROM UserInfo SET isWantChat =? WHERE Email =?',[0,socket.id],function(){
 					redisclient.get("isWantChatList",function(err,reply){
-						var tempreply=new Array();
-						tempreply=reply.delete(reply.indexOf(socket.id));
+						var tempreply=reply.delete(reply.indexOf(socket.id));
 
-					/*	var tempreply;
 						if(reply=null||reply==undefined){
 							tempreply=new Array();
 						}
@@ -108,7 +69,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 							tempreply==reply;
 						}
 						tempreply[tempreply.length]=data.useremail
-					redisclient.set("isWantChatList",data.useremail);*/
+					redisclient.set("isWantChatList",data.useremail);
 						wantchat=0;
 					});
 					});
@@ -125,7 +86,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 					userListPool.query('UPDATE isConnect FROM UserInfo SET isWantChat =? WHERE Email =?',[1,socket.id],function(){
 					redisclient.get("isWantChatList",function(err,reply){
 						if(reply=null||reply==undefined){
-						tempreply=new Array();
+						var tempreply=new Array();
 					}
 					else{
 						tempreply==reply;
@@ -139,7 +100,26 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 				},3000);
 			}
 		}else if(command==2){//nowchat버튼 클릭시(지금 채팅)
+			redisclient.get("isWantChatList",function(err,reply){
+				var tempreply=new Array();
+					function chatconnect(array){
+						if(array[0]==undefined&&!(array.length==0)){
+						return chatconnect(array.shift());
+					} else if(array[0]==null){
 
+					} else if(array.length==0){
+						socket.emit('chat_message',{return:"no waiting person"});
+					} else{
+						socket.emit('chat_message',{connect:array[0]});
+					}
+					return array;
+					}
+					tempreply = chatconnect(reply);
+					if(!(tempreply==reply)){
+						set("isWantChatList",tempreply);
+					}
+
+			});
 		}
 		});
 		if(poolresult[0].Room_1){
