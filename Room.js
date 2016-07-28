@@ -122,22 +122,9 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 			});
 		}
 		});
-		if(poolresult[0].Room_1){
-
-		}if(poolresult[0].Room_2){
-
-		}if(poolresult[0].Room_3){
-
-		}if(poolresult[0].Room_4){
-
-		}if(poolresult[0].Room_5){
-
 		}
-		socket.on('chat_message',function(Message){//{to:누구 message:내용}
-			redisclient.
-		});
-		}
-	});
-		//반대편 사람과 연결
+		
+
+	});//쿼리문괄호
 	});
 });
