@@ -41,9 +41,9 @@ io.sockets.on('connection', function (socket) {
 						socket.useremail=useremail;
 							socket.key=random();
 							callback(socket.key);
-					}:
+					}
 					socketinput(function(key) {
-						userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function{
+						userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function(err,results){
 							socket.emit('login',{
 								connect_status: 1,
 								pushemail: useremail,
@@ -73,7 +73,7 @@ io.sockets.on('connection', function (socket) {
 					socket.emit('sign_up',{
 						connect_status: 1
 					});
-					userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function{
+					userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function(err,results){
 						socket.emit('login',{
 							connect_status: 1,
 							pushemail: useremail,
@@ -117,8 +117,11 @@ io.sockets.on('connection', function (socket) {
 		});
 	});
 	socket.on('disconnect',function(){
-		if(!(!socket.username))
-		else userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,socket.useremail])
+		if(!(!socket.username)){
+		}else{ userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,socket.useremail],function(err,rows){
+				userListPool.release();
+			});
+		}
 	});
 });
 function random () {
