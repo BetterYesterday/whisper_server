@@ -20,7 +20,8 @@ app.use(express.static(path.join(__dirname,'public')));
 io.sockets.on('connection', function (socket) {
 	socket.on('sign_in',function(userdata_from){
 		function signin(data, callback){
-			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',userdata_from,function(err,rows) {
+			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',
+				userdata_from,function(err,rows) {
 				if (err) {
 					callback(err,null);
 				} else {
@@ -47,7 +48,7 @@ io.sockets.on('connection', function (socket) {
 							socket.emit('login',{
 								connect_status: 1,
 								pushemail: useremail,
-								yourkey: key
+								clientkey: key
 							});
 							userListPool.release();
 						});
@@ -55,7 +56,8 @@ io.sockets.on('connection', function (socket) {
 				}else if(!useremail.length){
 					socket.emit('login',{
 						connect_status: 0,
-						pushemail: useremail
+						pushemail: useremail,
+						clientkey: -1
 					});
 				}
 			}
@@ -63,7 +65,8 @@ io.sockets.on('connection', function (socket) {
 	});
 	socket.on('sign_up',function(userdata_from){
 		function sign_up(data,callback){
-			userListPool.query('INSERT INTO UserInfo (Email, Password, isConnect, countDuck, countRoom) VALUES (?, ?, 0, 0)',[useremail,userpassword],function(err,results){
+			userListPool.query('INSERT INTO UserInfo (Email, Password, isConnect, countDuck, countRoom) VALUES (?, ?, 0, 0)',
+				[useremail,userpassword],function(err,results){
 				if (err) {
 					throw err;
 					socket.emit('sign_up',{
@@ -73,7 +76,8 @@ io.sockets.on('connection', function (socket) {
 					socket.emit('sign_up',{
 						connect_status: 1
 					});
-					userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function(err,results){
+					userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',
+						[key,useremail],function(err,results){
 						socket.emit('login',{
 							connect_status: 1,
 							pushemail: useremail,
@@ -88,7 +92,8 @@ io.sockets.on('connection', function (socket) {
 	});
 	socket.on('check_email',function(useremail_from){
 		function check_email(data, callback){
-			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',useremail_from,function(err,rows){
+			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',
+				useremail_from,function(err,rows){
 				if(err){
 					callback(err,null);
 				}else{
