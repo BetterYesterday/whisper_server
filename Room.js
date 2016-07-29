@@ -4,8 +4,11 @@ var app = express();
 var Roomserver = require('http').createServer(app);
 var io = require('socket.io')(Roomserver);
 var port = 20902;
-
-var Logger = require('logger.js');
+//server connection
+var Sserver = require('http').createServer(app);
+var sio = require('socket.io')(Sserver);
+var sport = 10901;
+Sserver.listen(sport);
 
 var redis = require('redis');
 var redisclient = redis.createClient();
@@ -17,6 +20,7 @@ var userListPool = mysql.createPool({
 	password: 'Despair$667',
 	database: 'UserList'
 });
+//chat.js는 채팅방 들어가있을때만 연결됨.따라서 메시지 수신은 여기서 해야함.
 
 logger = new Logger('room.log');
 
@@ -27,6 +31,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 redisclient.on('error',function(err){
 	console.log('Error'+err);
+	logger.error('redis error');
+});
+var Ssocket=null;
+Sserver.listen(port);
+sio.sockets.on('connection',function(socket){
+	Ssocket=socket;
+	socket.on('disconnect',function(){
+		logger.error('chat.js disconnected');
+	});
 });
 var people = new Array();
 io.sockets.on('connection', function (socket) {//소켓 연결
@@ -123,7 +136,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 		}
 		});
 		}
-		
+
 
 	});//쿼리문괄호
 	});
