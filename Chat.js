@@ -9,6 +9,6 @@ var Logger = require('logger.js');
 var cport = 10901;
 var csocket=io.connect("localhost:"+cport);
 
-socket.on('connect'function(data){
-  
+csocket.on('connect'function(data){
+
 });

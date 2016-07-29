@@ -39,6 +39,7 @@ sio.sockets.on('connection',function(socket){
 	Ssocket=socket;
 	socket.on('disconnect',function(){
 		logger.error('chat.js disconnected');
+		Ssocket=null;
 	});
 });
 var people = new Array();
@@ -130,9 +131,20 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 					tempreply = chatconnect(reply);
 					if(!(tempreply==reply)){
 						set("isWantChatList",tempreply);
+						if(Ssocket){
+							redisclient.get("isWantChatList",function(err,reply){
+								if(err){
+									logger.error('chatconnection error');
+									break;
+								}
+								Ssocket.emit('connect_person',{1:reply[0],2:socket.id);
+							});
+						}
 					}
 
 			});
+		}else if(command==3){//방 나가기 버튼 클릭시
+
 		}
 		});
 		}
