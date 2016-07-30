@@ -22,12 +22,14 @@ io.sockets.on('connection', function (socket) {
 		Email = userdata_from.email;
 		Password = userdata_from.password;
 		function signin(data, callback){
-			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',
-				Email,function(err,rows) {
+			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',Email,function(err,rows) {
 				if (err) {
 					callback(err,null);
 				} else {
 					callback(null,rows[0].Email);
+					socket.emit('login',{
+						connect_status: 0
+					});
 				}
 			});
 		}
