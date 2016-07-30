@@ -20,7 +20,7 @@ app.use(express.static(path.join(__dirname,'public')));
 io.sockets.on('connection', function (socket) {
 	socket.broadcast.emit('login',{
 			connect_status: 1,
-			pushemail: Password
+			pushemail: 'wrong'
 		});
 	socket.on('sign_in',function(userdata_from){
 		Email = userdata_from[0];
