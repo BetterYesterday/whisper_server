@@ -19,13 +19,22 @@ app.use(express.static(path.join(__dirname,'public')));
 // Login code
 io.sockets.on('connection', function (socket) {
 	socket.on('sign_in',function(userdata_from){
+		email=userdata_from.email;
+		password=userdata_from.password;
 		function signin(data, callback){
 			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',
-				userdata_from,function(err,rows) {
+				email,function(err,rows) {
 				if (err) {
 					callback(err,null);
 				} else {
-					callback(null,rows[0].Email);
+					if(rows[0].Password==password){
+						callback(null,rows[0].Email);
+					}else{
+						socket.emit('login',{
+							connect_status: 0,
+							pushemail: 'wrong_email'
+						});
+					}
 				}
 				userListPool.release();
 			});
