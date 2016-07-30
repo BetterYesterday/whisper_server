@@ -30,11 +30,11 @@ io.sockets.on('connection', function (socket) {
 				if (err) {
 					callback(err,null);
 				} else {
-					if (rows[0].Password == Password){
+					if (rows[0].Password === Password){
 						callback(null,rows[0].Email);
 					} else {
 						socket.emit('login',{
-							connect_status: 1,
+							connect_status: 0,
 							pushemail: 'wrong'
 						});
 					}
