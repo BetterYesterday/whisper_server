@@ -23,8 +23,7 @@ io.sockets.on('connection', function (socket) {
 		Password = userdata_from[1];
 		socket.emit('login',{
 			connect_status: 1,
-			pushemail: Password,
-
+			pushemail: Password
 		});
 		function signin(data, callback){
 			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',
