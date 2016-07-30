@@ -29,7 +29,6 @@ io.sockets.on('connection', function (socket) {
 				} else {
 					callback(null,rows[0].Email);
 				}
-				userListPool.release();
 			});
 		}
 		var connect_status = 0;
@@ -52,7 +51,6 @@ io.sockets.on('connection', function (socket) {
 								pushemail: useremail,
 								clientkey: key
 							});
-							userListPool.release();
 						});
 					});
 				}else if(!useremail.length){
