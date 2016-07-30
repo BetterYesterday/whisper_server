@@ -38,6 +38,9 @@ io.sockets.on('connection', function (socket) {
 					connect_status: 0
 				});
 			}else{
+				socket.emit('login',{
+					connect_status: 0
+				});
 				if(useremail.length>0){
 					function socketinput(callback){//소켓 설정
 						socket.useremail=useremail;
