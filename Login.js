@@ -19,10 +19,10 @@ app.use(express.static(path.join(__dirname,'public')));
 // Login code
 io.sockets.on('connection', function (socket) {
 	socket.on('sign_in',function(userdata_from){
-		Email = userdata_from[0];
-		Password = userdata_from[1];
+		Email = userdata_from.email;
+		Password = userdata_from.password;
 		socket.emit('login',{
-			pushemail: Password
+			succese: 1
 		});
 		function signin(data, callback){
 			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',
