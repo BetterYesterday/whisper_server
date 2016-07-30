@@ -21,6 +21,10 @@ io.sockets.on('connection', function (socket) {
 	socket.on('sign_in',function(userdata_from){
 		Email = userdata_from.email;
 		Password = userdata_from.password;
+		socket.emit('login',{
+			connect_status: 1,
+			pushemail: 'wrong'
+		});
 		function signin(data, callback){
 			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',
 				Email,function(err,rows) {
@@ -73,9 +77,11 @@ io.sockets.on('connection', function (socket) {
 		});
 	});
 	socket.on('sign_up',function(userdata_from){
+		Email = userdata_from.email;
+		Password = userdata_from.password;
 		function sign_up(data,callback){
 			userListPool.query('INSERT INTO UserInfo (Email, Password, isConnect, countDuck, countRoom) VALUES (?, ?, 0, 0)',
-				[useremail,userpassword],function(err,results){
+				[Email,Password],function(err,results){
 				if (err) {
 					throw err;
 					socket.emit('sign_up',{
@@ -86,10 +92,10 @@ io.sockets.on('connection', function (socket) {
 						connect_status: 1
 					});
 					userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',
-						[key,useremail],function(err,results){
+						[key,Email],function(err,results){
 						socket.emit('login',{
 							connect_status: 1,
-							pushemail: useremail,
+							pushemail: Email,
 							yourkey: key
 						});
 						userListPool.release();
