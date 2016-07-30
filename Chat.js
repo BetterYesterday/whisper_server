@@ -125,7 +125,7 @@ dsocket.on('disconnect',function(ddata){
           }
         }
       });
-
+/*
       userListPool.query('SELECT Room_* FROM UserInfo WHERE Email = ?',MyRoom[1].my,function(err,rows) {
         userListPool.release();
       });
@@ -140,11 +140,11 @@ dsocket.on('disconnect',function(ddata){
       });
       userListPool.query('SELECT Room_* FROM UserInfo WHERE Email = ?',MyRoom[5].my,function(err,rows) {
         userListPool.release();
-      });
+      });*/
     });
     socket.on('message',function(data){//Room:방(숫자로 보낼것)Message:메시지Online:상대방 온라인여부
       if(data.Online){
-        io.sockets.in(MyRoom[data.Room]).emit(Message,{Message)
+        io.sockets.in(MyRoom[data.Room]).emit(Message,{Message})
       }
     });
   });
