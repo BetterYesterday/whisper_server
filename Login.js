@@ -21,10 +21,6 @@ io.sockets.on('connection', function (socket) {
 	socket.on('sign_in',function(userdata_from){
 		Email = userdata_from.email;
 		Password = userdata_from.password;
-		socket.emit('login',{
-			connect_status: 0,
-			pushemail: Password
-		});
 		function signin(data, callback){
 			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',
 				Email,function(err,rows) {
