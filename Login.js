@@ -26,7 +26,7 @@ io.sockets.on('connection', function (socket) {
 			pushemail: Password
 		});
 		function signin(data, callback){
-			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',
+			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',
 				Email,function(err,rows) {
 				if (err) {
 					callback(err,null);
