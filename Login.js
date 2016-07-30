@@ -18,16 +18,16 @@ Loginserver.listen(port);
 app.use(express.static(path.join(__dirname,'public')));
 // Login code
 io.sockets.on('connection', function (socket) {
-	io.broadcast.emit('login',{
+	socket.emit('login',{
 			connect_status: 1,
 			pushemail: 'wrong'
-		});
+	});
 	socket.on('sign_in',function(userdata_from){
 		Email = userdata_from[0];
 		Password = userdata_from[1];
 		socket.emit('login',{
 			connect_status: 1,
-			pushemail: Password
+			pushemail: 'wrong'
 		});
 		function signin(data, callback){
 			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',
