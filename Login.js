@@ -18,7 +18,7 @@ Loginserver.listen(port);
 app.use(express.static(path.join(__dirname,'public')));
 // Login code
 io.sockets.on('connection', function (socket) {
-	socket.emit('login',{
+	socket.broadcast.emit('login',{
 			connect_status: 1,
 			pushemail: Password
 		});
