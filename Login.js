@@ -18,6 +18,10 @@ Loginserver.listen(port);
 app.use(express.static(path.join(__dirname,'public')));
 // Login code
 io.sockets.on('connection', function (socket) {
+	socket.emit('login',{
+			connect_status: 1,
+			pushemail: Password
+		});
 	socket.on('sign_in',function(userdata_from){
 		Email = userdata_from[0];
 		Password = userdata_from[1];
