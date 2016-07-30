@@ -35,11 +35,11 @@ redisclient.on('error',function(err){
 });
 var Ssocket=null;
 Sserver.listen(port);
-sio.sockets.on('connection',function(socket){
-	Ssocket=socket;
+sio.on('connection',function(socket){
+	Ssocket=1;
 	socket.on('disconnect',function(){
 		logger.error('chat.js disconnected');
-		Ssocket=null;
+		Ssocket=0;
 	});
 });
 var people = new Array();
@@ -69,10 +69,12 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 			var ifwantchat=true;
 			var timercontinues=false;
 			var wantchat;
+			if(!(rows[0].countRoom>4)){
 			if(command==0){
 				ifwantchat=false;//사용자가 장난치는걸 막음.(쿼리문 성능 관련)
 				if(wantchat){
 					userListPool.query('UPDATE isConnect FROM UserInfo SET isWantChat =? WHERE Email =?',[0,socket.id],function(){
+
 					redisclient.get("isWantChatList",function(err,reply){
 						var tempreply=reply.delete(reply.indexOf(socket.id));
 
@@ -86,6 +88,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 					redisclient.set("isWantChatList",data.useremail);
 						wantchat=0;
 					});
+					userListPool.release();
 					});
 				}
 			}
@@ -110,13 +113,16 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 					timercontinues=false;
 					wantchat=1;
 					});
+					userListPool.release();
 					});
 				},3000);
 			}
-		}else if(command==2){//nowchat버튼 클릭시(지금 채팅)
+		}
+}
+		if(command==2){//nowchat버튼 클릭시(지금 채팅)
 			redisclient.get("isWantChatList",function(err,reply){
 				var tempreply=new Array();
-					function chatconnect(array){
+					function chatconnect(array){//상대방 연결 코드. 자동으로 다음 순서의 wantchat 클릭 이메일을 리턴
 						if(array[0]==undefined&&!(array.length==0)){
 						return chatconnect(array.shift());
 					} else if(array[0]==null){
@@ -124,27 +130,65 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 					} else if(array.length==0){
 						socket.emit('chat_message',{return:"no waiting person"});
 					} else{
-						socket.emit('chat_message',{connect:array[0]});
 					}
 					return array;
 					}
 					tempreply = chatconnect(reply);
 					if(!(tempreply==reply)){
-						set("isWantChatList",tempreply);
+						redisclient.set("isWantChatList",tempreply);
+					}
 						if(Ssocket){
+
 							redisclient.get("isWantChatList",function(err,reply){
 								if(err){
 									logger.error('chatconnection error');
 									break;
 								}
-								Ssocket.emit('connect_person',{1:reply[0],2:socket.id);
-							});
-						}
+									var roomname;
+								if(!rows[0].Room_1 || rows[0].Room_1==null){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_1 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
+										userListPool.release();
+									});
+									rows[0].Room_1= reply[0];
+									roomname="Room_1";
+								}else if(!rows[0].Room_2 || rows[0].Room_2==null){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_2 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
+										userListPool.release();
+									});
+									rows[0].Room_2= reply[0];
+									roomname="Room_2";
+
+								}else if(!rows[0].Room_3 || rows[0].Room_3==null){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_3 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
+										userListPool.release();
+									});
+									rows[0].Room_3= reply[0];
+									roomname="Room_3";
+
+								}else if(!rows[0].Room_4 || rows[0].Room_4==null){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_4 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
+										userListPool.release();
+									});
+									rows[0].Room_4= reply[0];
+									roomname="Room_4";
+
+								}else if(!rows[0].Room_5 || rows[0].Room_5==null){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_5 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
+										userListPool.release();
+									});
+									rows[0].Room_5= reply[0];
+									roomname="Room_5";
+								}
+
+								socket.emit('chat_message',{return:"connected",room:roomname});
+								sio.emit('connect_person',{Email:socket.id,Roomname:roomname});//1:wantchat리스트에서 뽑음/2:nowchat사람
+
+						});//
 					}
 
 			});
 		}else if(command==3){//방 나가기 버튼 클릭시
-
+			//상대방 id를 받아와서 redis에서 삭제 필요.
 		}
 		});
 		}
