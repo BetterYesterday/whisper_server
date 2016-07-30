@@ -51,16 +51,14 @@ io.sockets.on('connection', function (socket) {
 						userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function(err,results){
 							socket.emit('login',{
 								connect_status: 1,
-								pushemail: useremail,
-								clientkey: key
+								pushemail: useremail
 							});
 						});
 					});
 				}else if(!useremail.length){
 					socket.emit('login',{
 						connect_status: 0,
-						pushemail: useremail,
-						clientkey: 128
+						pushemail: useremail
 					});
 				}
 			}
