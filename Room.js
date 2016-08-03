@@ -55,7 +55,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 	}
 	userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {
 		var poolresult=rows;//이거 필요한지?(테스트해봐야)
-	userListPool.release();
+
 		if (err||!rows[0].isConnect) {
 			//Logger써서 에러출력
 		} else if(data.userkey != rows[0].isConnect){
@@ -88,7 +88,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 					redisclient.set("isWantChatList",data.useremail);
 						wantchat=0;
 					});
-					userListPool.release();
+
 					});
 				}
 			}
@@ -113,14 +113,14 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 					timercontinues=false;
 					wantchat=1;
 					});
-					userListPool.release();
+
 					});
 				},3000);
 			}
 		}
 }
 		if(command==2){//nowchat버튼 클릭시(지금 채팅)
-			redisclient.get("isWantChatList",function(err,reply){
+			redisclient.get("isWantChatList",function(err,reply){//reply[0]을 연결
 				var tempreply=new Array();
 					function chatconnect(array){//상대방 연결 코드. 자동으로 다음 순서의 wantchat 클릭 이메일을 리턴
 						if(array[0]==undefined&&!(array.length==0)){
@@ -145,43 +145,46 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 									break;
 								}
 									var roomname;
-								if(!rows[0].Room_1 || rows[0].Room_1==null){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_1 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
-										userListPool.release();
+									redisclient.get("Roomcode",function(err,replys){//roomname.codename이 어디까지 세어졋나?
+										if(err||replys==undefined||replys==null){
+											replys=0;
+										}
+										replys++;
+										roomname.codename=replys;
+										redisclient.set("Roomcode",replys);
 									});
-									rows[0].Room_1= reply[0];
-									roomname="Room_1";
-								}else if(!rows[0].Room_2 || rows[0].Room_2==null){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_2 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
-										userListPool.release();
-									});
-									rows[0].Room_2= reply[0];
-									roomname="Room_2";
+								if(!rows[0].Room_1 || rows[0].Room_1==null|| rows[0].Room_1==undefined){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_1 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
 
-								}else if(!rows[0].Room_3 || rows[0].Room_3==null){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_3 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
-										userListPool.release();
 									});
-									rows[0].Room_3= reply[0];
-									roomname="Room_3";
+									roomname.num="Room_1";
+								}else if(!rows[0].Room_2 || rows[0].Room_2==null|| rows[0].Room_1==undefined){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_2 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
 
-								}else if(!rows[0].Room_4 || rows[0].Room_4==null){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_4 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
-										userListPool.release();
 									});
-									rows[0].Room_4= reply[0];
-									roomname="Room_4";
+									roomname.num="Room_2";
 
-								}else if(!rows[0].Room_5 || rows[0].Room_5==null){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_5 =? WHERE Email =? SET countRoom =?',[reply[0],socket.id,(rows[0].countRoom+1)],function(){
-										userListPool.release();
+								}else if(!rows[0].Room_3 || rows[0].Room_3==null|| rows[0].Room_1==undefined){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_3 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
+
 									});
-									rows[0].Room_5= reply[0];
-									roomname="Room_5";
+									roomname.num="Room_3";
+
+								}else if(!rows[0].Room_4 || rows[0].Room_4==null|| rows[0].Room_1==undefined){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_4 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
+
+									});
+									roomname.num="Room_4";
+
+								}else if(!rows[0].Room_5 || rows[0].Room_5==null|| rows[0].Room_1==undefined){
+									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_5 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
+
+									});
+									roomname.num="Room_5";
 								}
 
-								socket.emit('chat_message',{return:"connected",room:roomname});
-								sio.emit('connect_person',{Email:socket.id,Roomname:roomname});//1:wantchat리스트에서 뽑음/2:nowchat사람
+								socket.emit('chat_message',{return:"connected",Num:roomname.num,code:roomname.codename});
+								sio.emit('connect_person',{Email:socket.id,Numname:roomname.num,Codename:roomname.codename,who:reply[0]});//1:wantchat리스트에서 뽑음/2:nowchat사람
 
 						});//
 					}
@@ -194,6 +197,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 		}
 
 
+			redisclient.set("MyRoomList",MyRoom);
 	});//쿼리문괄호
 	});
 });

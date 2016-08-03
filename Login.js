@@ -40,7 +40,7 @@ io.sockets.on('connection', function (socket) {
 						});
 					}
 				}
-				userListPool.release();
+
 			});
 		}
 		var connect_status = 0;
@@ -63,7 +63,7 @@ io.sockets.on('connection', function (socket) {
 								pushemail: useremail,
 								clientkey: key
 							});
-							userListPool.release();
+
 						});
 					});
 				}else if(!useremail.length){
@@ -98,10 +98,10 @@ io.sockets.on('connection', function (socket) {
 							pushemail: Email,
 							yourkey: key
 						});
-						userListPool.release();
+
 					})
 				}
-				userListPool.release();
+
 			});
 		}
 	});
@@ -114,7 +114,7 @@ io.sockets.on('connection', function (socket) {
 				}else{
 					callback(null,rows[0].Email);
 				}
-				userListPool.release();
+
 			});
 		}
 		check_email(data, function(err, useremail){
@@ -139,7 +139,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('disconnect',function(){
 		if(!(!socket.username)){
 		}else{ userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,socket.useremail],function(err,rows){
-				userListPool.release();
+
 			});
 		}
 	});
@@ -147,6 +147,6 @@ io.sockets.on('connection', function (socket) {
 function random () {
 	var RandomNumber=0;
 	while(RandomNumber==0)
-	RandomNumber=Math.random() * (127+128) -128;
+	RandomNumber=Math.random() * (32767-(-32768)) -32768;
   	return RandomNumber;
 }
