@@ -21,26 +21,20 @@ io.sockets.on('connection', function (socket) {
 	socket.on('sign_in',function(userdata_from){
 		Email = userdata_from.email;
 		Password = userdata_from.password;
-		socket.emit('login',{
-			connect_status: 1,
-			pushemail: Password
-		});
 		function signin(data, callback){
-			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',
-				Email,function(err,rows) {
+			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',Email,function(err,rows) {
 				if (err) {
 					callback(err,null);
 				} else {
-					if (rows[0].Password == Password){
-						callback(null,rows[0].Email);
-					} else {
-						socket.emit('login',{
-							connect_status: 1,
-							pushemail: 'wrong'
-						});
-					}
+					callback(null,rows[0].Email);
+					socket.emit('login',{
+						connect_status: 0
+					});
 				}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 97eba9f09e8fe8a61913a3ed108d2e7f763f9ca8
 			});
 		}
 		var connect_status = 0;
@@ -50,6 +44,9 @@ io.sockets.on('connection', function (socket) {
 					connect_status: 0
 				});
 			}else{
+				socket.emit('login',{
+					connect_status: 0
+				});
 				if(useremail.length>0){
 					function socketinput(callback){//소켓 설정
 						socket.useremail=useremail;
@@ -60,17 +57,18 @@ io.sockets.on('connection', function (socket) {
 						userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function(err,results){
 							socket.emit('login',{
 								connect_status: 1,
-								pushemail: useremail,
-								clientkey: key
+								pushemail: useremail
 							});
+<<<<<<< HEAD
 
+=======
+>>>>>>> 97eba9f09e8fe8a61913a3ed108d2e7f763f9ca8
 						});
 					});
 				}else if(!useremail.length){
 					socket.emit('login',{
 						connect_status: 0,
-						pushemail: useremail,
-						clientkey: -1
+						pushemail: useremail
 					});
 				}
 			}
