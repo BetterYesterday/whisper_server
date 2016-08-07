@@ -29,7 +29,7 @@ io.sockets.on('connection', function (socket) {
 					callback(null,rows[0].Email);
 					socket.emit('login',{
 						connect_status: 0
-					});
+				});
 				}
 <<<<<<< HEAD
 
