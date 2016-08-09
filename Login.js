@@ -4,10 +4,10 @@ var app = express();
 var Loginserver = require('http').createServer(app);
 var io = require('socket.io')(Loginserver);
 var path = require('path');
-var port = 20901;
+var port = 20910;
 
 var mysql = require('mysql');
-var userListPool = mysql.createPool({
+var userListPool = mysql.createPool({	
 	host: 'localhost',
 	user: 'root',
 	password: 'Despair$667',
@@ -18,133 +18,45 @@ Loginserver.listen(port);
 app.use(express.static(path.join(__dirname,'public')));
 // Login code
 io.sockets.on('connection', function (socket) {
+	console.log('connection');
 	socket.on('sign_in',function(userdata_from){
 		Email = userdata_from.email;
 		Password = userdata_from.password;
-		function signin(data, callback){
-			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',Email,function(err,rows) {
-				if (err) {
-					callback(err,null);
-				} else {
-					callback(null,rows[0].Email);
-					socket.emit('login',{
-						connect_status: 0
-				});
-				}
-<<<<<<< HEAD
-
-=======
->>>>>>> 97eba9f09e8fe8a61913a3ed108d2e7f763f9ca8
-			});
-		}
-		var connect_status = 0;
-		signin(data, function(err, useremail){
+		userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',Email,function(err,rows) {
 			if(err){
 				socket.emit('login',{
-					connect_status: 0
+					connect_status: 2,
+					pushcode: null
+				});
+			}else if(rows[0]==null){
+				socket.emit('login',{
+					connect_status: 0,
+					pushcode: 'null_email'
 				});
 			}else{
-				socket.emit('login',{
-					connect_status: 0
-				});
-				if(useremail.length>0){
-					function socketinput(callback){//소켓 설정
-						socket.useremail=useremail;
-							socket.key=random();
-							callback(socket.key);
-					}
-					socketinput(function(key) {
-						userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[key,useremail],function(err,results){
+				if(Password==rows[0].Password){
+					var key = random();
+					userListPool.query('UPDATE UserInfo SET isConnect=? WHERE Email = ?',[key,Email],function(err,result){
+						if(!err){
 							socket.emit('login',{
 								connect_status: 1,
-								pushemail: useremail
+								pushcode: key
 							});
-<<<<<<< HEAD
-
-=======
->>>>>>> 97eba9f09e8fe8a61913a3ed108d2e7f763f9ca8
-						});
+						}
 					});
-				}else if(!useremail.length){
+				}else{
 					socket.emit('login',{
 						connect_status: 0,
-						pushemail: useremail
+						pushcode: 'wrong_password'
 					});
-				}
+				}			
 			}
 		});
-	});
-	socket.on('sign_up',function(userdata_from){
-		Email = userdata_from.email;
-		Password = userdata_from.password;
-		function sign_up(data,callback){
-			userListPool.query('INSERT INTO UserInfo (Email, Password, isConnect, countDuck, countRoom) VALUES (?, ?, 0, 0)',
-				[Email,Password],function(err,results){
-				if (err) {
-					throw err;
-					socket.emit('sign_up',{
-						connect_status: 0
-					});
-				} else {
-					socket.emit('sign_up',{
-						connect_status: 1
-					});
-					userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',
-						[key,Email],function(err,results){
-						socket.emit('login',{
-							connect_status: 1,
-							pushemail: Email,
-							yourkey: key
-						});
-
-					})
-				}
-
-			});
-		}
-	});
-	socket.on('check_email',function(useremail_from){
-		function check_email(data, callback){
-			userListPool.query('SELECT Email FROM UserInfo WHERE Email = ?',
-				useremail_from,function(err,rows){
-				if(err){
-					callback(err,null);
-				}else{
-					callback(null,rows[0].Email);
-				}
-
-			});
-		}
-		check_email(data, function(err, useremail){
-			if(err){
-				socket.emit('check_email',{
-					connect_status: 0
-				});
-			}else{
-				if(useremail.length>0){
-					socket.emit('check_email',{
-						connect_status: 0
-					});
-				}else if(!useremail.length){
-					socket.emit('check_email',{
-						connect_status: 1,
-						pushemail: useremail
-					});
-				}
-			}
-		});
-	});
-	socket.on('disconnect',function(){
-		if(!(!socket.username)){
-		}else{ userListPool.query('UPDATE isConnect FROM UserInfo SET isConnect =? WHERE Email =?',[0,socket.useremail],function(err,rows){
-
-			});
-		}
 	});
 });
-function random () {
+function random(){
 	var RandomNumber=0;
 	while(RandomNumber==0)
 	RandomNumber=Math.random() * (32767-(-32768)) -32768;
-  	return RandomNumber;
+  	return parseInt(RandomNumber);
 }
