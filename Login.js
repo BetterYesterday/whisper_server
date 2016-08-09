@@ -22,24 +22,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('sign_in',function(userdata_from){
 		Email = userdata_from.email;
 		Password = userdata_from.password;
-<<<<<<< HEAD
 		userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',Email,function(err,rows) {
-=======
-		function signin(data, callback){
-			userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',Email,function(err,rows) {
-				if (err) {
-					callback(err,null);
-				} else {
-					callback(null,rows[0].Email);
-					socket.emit('login',{
-						connect_status: 0
-					});
-				}
-			});
-		}
-		var connect_status = 0;
-		signin(data, function(err, useremail){
->>>>>>> 21ff5528e303ebd9a935e1e45a48cc82850562f9
 			if(err){
 				socket.emit('login',{
 					connect_status: 2,
@@ -59,11 +42,7 @@ io.sockets.on('connection', function (socket) {
 								connect_status: 1,
 								pushcode: key
 							});
-<<<<<<< HEAD
 						}
-=======
-						});
->>>>>>> 21ff5528e303ebd9a935e1e45a48cc82850562f9
 					});
 				}else{
 					socket.emit('login',{
