@@ -5,6 +5,8 @@ var Roomserver = require('http').createServer(app);
 var io = require('socket.io')(Roomserver);
 var port = 20902;
 //server connection
+var Logger = require('logger.js');
+var RoomConn = require('RoomListConnector.js');
 var Sserver = require('http').createServer(app);
 var sio = require('socket.io')(Sserver);
 var sport = 10901;
@@ -69,10 +71,13 @@ io.sockets.on('connection', function (socket) {//소켓 연결
  					ssocket.emit(priority_arr[circular].Email,roomname);
 	 					ssocket.emit(socket.id,roomname);
 
-					userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {});
-					userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {});
-					userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {});
-
+						RoomConn.write("./Rooms/"+socket.id,now.split().push().shifter().join(),function(err){
+							logger.error("write ERROR!!! "+socket.id);
+						});
+						RoomConn.write("./Rooms/"+priority_arr[circular].Email,now.split().push().shifter().join(),function(err){
+							logger.error("write ERROR!!! "+priority_arr[circular].Email);
+						});
+						circular++;
 				}else{//방 삭제
 
 					userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {});
@@ -86,3 +91,13 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 });
 });
 });
+function shifter(array){//상대방 연결 코드. 자동으로 다음 순서의 wantchat 클릭 이메일을 리턴
+	if(array[0]==undefined&&!(array.length==0)){
+	return chatconnect(array.shift());
+} else if(array[0]==null){
+
+} else if(array.length==0){
+} else{
+}
+return array;
+}
