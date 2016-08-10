@@ -57,7 +57,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 	socket.on('sign_in',function(userdata_from){//Email,key
   userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {
     if (err||!rows[0].isConnect) {
-			socket.emit('chat_message',{roomstatus:"E"});
+			socket.emit('chat_message',{roomstatus:"ERR"});
 			//Logger써서 에러출력
 		} else if(data.userkey != rows[0].isConnect){
 			socket.emit('chat_message',{roomstatus:"Canceled"});
@@ -65,22 +65,30 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 		} else{
 			socket.id=userdata_from.Email;
 			socket.emit('chat_message',{roomstatus:"connected"});
-			socket.on('room_change',function(dmdkdk){//now:현재 방 리스트 전부 status:추가?제거? room:방이름
+			socket.on('room_change',function(dmdkdk){//now:현재 방 리스트 전부(,으로 구분) status:추가?제거? room:방이름(스트링,삭제 때만 사용)
+																							 //message:메시지(스트링, 개설 때만 사용)
 				if(dmdkdk.status){//랜덤 방 매칭
 				roomname++;
- 					ssocket.emit(priority_arr[circular].Email,roomname);
-	 					ssocket.emit(socket.id,roomname);
+ 					ssocket.emit(priority_arr[circular].Email,{roomname:roomname,message:dmdkdk.message});//푸쉬에서 룸네임을 전송 명령
+	 					ssocket.emit(socket.id,{roomname:roomname});
 
-						RoomConn.write("./Rooms/"+socket.id,now.split().push().shifter().join(),function(err){
+						RoomConn.write("./Rooms/"+socket.id,now.split().push(roomname).shifter().join(),function(err){
 							logger.error("write ERROR!!! "+socket.id);
+							userListPool.query('UPDATE RoomCount SET LastPushedBy=now() WHERE Email = ?',[socket.id],function(){
+
+							  userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',socket.id,function(err,rows_1) {
+									rows_l.LastPushedBy
+								});
+							});
 						});
-						RoomConn.write("./Rooms/"+priority_arr[circular].Email,now.split().push().shifter().join(),function(err){
+						RoomConn.write("./Rooms/"+priority_arr[circular].Email,now.split().push(roomname).shifter().join(),function(err){
 							logger.error("write ERROR!!! "+priority_arr[circular].Email);
 						});
 						circular++;
 				}else{//방 삭제
-
-					userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {});
+					var temparr = dmdkdk.now.split()
+					temparr[temparr.indexOf(dmdkdk.room)]=undefined;
+					userListPool.query('SELECT * FROM ')
 				}
 
 			});
