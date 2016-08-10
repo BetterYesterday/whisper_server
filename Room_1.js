@@ -52,29 +52,27 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 	//emit:메시지 전송
 	socket.emit('chat_message',{message:'Room_Connected'});
 
-	socket.on('sign_in',function(userdata_from){
-		data = {
-		useremail: userdata_from[0],
-		userkey: userdata_from[1]
-	}
+	socket.on('sign_in',function(userdata_from){//Email,key
   userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {
     if (err||!rows[0].isConnect) {
 			socket.emit('chat_message',{roomstatus:"E"});
 			//Logger써서 에러출력
 		} else if(data.userkey != rows[0].isConnect){
-			socket.emit('chat_message',{roomstatus:"E"});
+			socket.emit('chat_message',{roomstatus:"Canceled"});
 			//로그인 실패(공격시도) -> 해당 ip 차단(일시적)
 		} else{
+			socket.id=userdata_from.Email;
 			socket.emit('chat_message',{roomstatus:"connected"});
 			socket.on('room_change',function(dmdkdk){//now:현재 방 리스트 전부 status:추가?제거? room:방이름
 				if(dmdkdk.status){//랜덤 방 매칭
 				roomname++;
  					ssocket.emit(priority_arr[circular].Email,roomname);
+	 					ssocket.emit(socket.id,roomname);
 
 					userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {});
 					userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {});
 					userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {});
-					
+
 				}else{//방 삭제
 
 					userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {});
