@@ -12,9 +12,6 @@ var sio = require('socket.io')(Sserver);
 var sport = 10901;
 Sserver.listen(sport);
 
-var redis = require('redis');
-var redisclient = redis.createClient();
-
 var mysql = require('mysql');
 var userListPool = mysql.createPool({
 	host: 'localhost',
@@ -31,10 +28,6 @@ Roomserver.listen(port);
 // Routing
 app.use(express.static(path.join(__dirname, 'public')));
 
-redisclient.on('error',function(err){
-	console.log('Error'+err);
-	logger.error('redis error');
-});
 var roomname=0;
 var circular=0;
 var priority_arr=new Array();
@@ -70,7 +63,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 			socket.emit('chat_message',{roomstatus:"connected"});
 			var timerid;
 			var minutesave;
-			socket.on('room_push',function(dmdkdkdk){//새로운 방 받지 않음 기능
+			socket.on('room_nopush',function(dmdkdkdk){//새로운 방 받지 않음 기능//이거 이벤트이름 바꿈
 																								//yn:yes(1),no(0) minute:몇분?
 				if(dmdkdkdk.yn){
 					userListPool.query('SELECT * FROM RoomCount WHERE Email = ?',[socket.id],function(err,rrows){
@@ -97,21 +90,32 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 				roomname++;
 				for(;priority_arr[circular]==undefined;circular++){}
  					ssocket.emit(priority_arr[circular].Email,{roomname:roomname,message:dmdkdk.message});//푸쉬에서 룸네임을 전송 명령
-	 					ssocket.emit(socket.id,{roomname:roomname});
+	 					ssocket.emit(socket.id,{roomname:roomname,message:"NULL"});
 
+						var timerid1 = setTimeout(function(){
+								ssocket.off(socket.id,function(){});
+
+						},8000);
+						ssocket.on(socket.id,function(dddata){
+
+							clearTimeout(timerid1);
 						RoomConn.write("./Rooms/"+socket.id,now.split().push(roomname).shifter().join(),function(err){
 							if(err){logger.error("write ERROR!!! "+socket.id);}
 
-							userListPool.query('UPDATE RoomCount SET Point=date_format(now(),"%Y%m%d%H%i%s" WHERE Email = ?',[socket.id],function(){
+							userListPool.query('UPDATE RoomCount SET Point=date_format(now(),"%Y%m%d%H%i%s") WHERE Email = ?',[socket.id],function(){
 
 							});
 						});
 						RoomConn.write("./Rooms/"+priority_arr[circular].Email,now.split().push(roomname).shifter().join(),function(err){
 							if(err){logger.error("write ERROR!!! "+priority_arr[circular].Email);}
-							userListPool.query('UPDATE RoomCount SET Point=date_format(now(),"%Y%m%d%H%i%s" WHERE Email = ?',[priority_arr[circular].Email],function(){
 
-							});
 						});
+					});
+
+					},dmdkdkdk.minute);
+					userListPool.query('UPDATE RoomCount SET Point=date_format(now(),"%Y%m%d%H%i%s") WHERE Email = ?',[priority_arr[circular].Email],function(){
+
+					});
 						circular++;
 				}else{//방 삭제
 					var temparr = dmdkdk.now.split();//현재 있는 채팅방에서 삭제

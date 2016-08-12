@@ -5,11 +5,10 @@ var io = require('socket.io')(Chatserver);
 var port = 20903;
 //client
 var cio = require('socket.io-client');
+var RoomConn = require('RoomListConnector.js');
 var Logger = require('logger.js');
-var cport = 10901;
-var csocket=cio.connect("localhost:"+cport);
-var dport=10902;
-var dsocket=dio.connect("localhost:"+dport);//push로 통신
+var sport = 10902;
+Sserver.listen(sport);
 
 var redis = require('redis');
 var redisclient = redis.createClient();
@@ -17,12 +16,9 @@ var newRoomwait = new newRoomwait();
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-csocket.on('connect',function(cdata){
+csocket.on('connect',function(cdata){//전부 포함,
 
-});
-csocket.on('disconnect',function(){
 
-});
 csocket.on('connect_person',function(data){
 newRoomwait=newRoomwait.push({Email:data.Email,Nummname:data.Numname,Codename:data.Codename});
 });//{Email:socket.id,Numname:roomname.num,Codename:roomname.codename,who:reply[0]}
@@ -160,3 +156,5 @@ dsocket.on('disconnect',function(ddata){
 function chat_sendmgr(Message,Email){
   dsocket.emit('message',{who:Email,Message:Message});
 }
+
+});
