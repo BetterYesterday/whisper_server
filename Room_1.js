@@ -34,7 +34,7 @@ var roomname=0;
 var circular=0;
 var priority_arr=new Array();
 setInterval(function(){
-	userListPool.query('SELECT * FROM RoomCount ORDER BY Point ASC;'function(err,rows){//우선순위 받아옴(작은것부터(오름차순))
+	userListPool.query('SELECT * FROM RoomCount ORDER BY Point ASC',function(err,rows){//우선순위 받아옴(작은것부터(오름차순))
 		for(circular=0;rows[circular].Point<0;circular++){
 
 		}
