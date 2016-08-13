@@ -6,8 +6,10 @@ var io = require('socket.io')(Pushserver);
 var port = 20904;
 //server connection
 Pushserver.listen(port);
+var cio = require('socket.io-client');
 var cport = 10901;
 var csocket=cio.connect("localhost:"+cport);//room과 통신
+var dio = require('socket.io-client');
 var dport=10902;
 var dsocket=dio.connect("localhost:"+dport);//chat과 통신
 

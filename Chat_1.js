@@ -1,3 +1,5 @@
+//요걸로 쓰기
+
 var express = require('express');
 var app = express();
 var Chatserver = require('http').createServer(app);
