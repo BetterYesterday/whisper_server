@@ -23,7 +23,7 @@ io.sockets.on('connection',function(socket){
   socket.on('login',function(data){//Email,key,
     socket.id = data.Email
     socket.on('send',function(ahrdkvk){//roomname,message
-      ssocket.emit(socket.id,{roomname:ahrdkvk.roomname,message:ahrdkvk.message});
+      ssocket.emit("message",{roomname:ahrdkvk.roomname,message:ahrdkvk.message});
     });
   });
 });

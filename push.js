@@ -42,7 +42,7 @@ io.sockets.on('connection',function(socket){
 
   });
 });
-dsocket.on(socket.id,function(ddata){//방에 메시지 보내기
+dsocket.on("message",function(ddata){//방에 메시지 보내기
   io.to(ddata.roomname).emit('message',{roomname:cdata.roomname,message:cdata.message,Isend:false});
 
 });
