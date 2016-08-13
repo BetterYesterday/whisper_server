@@ -133,6 +133,7 @@ io.sockets.on('connection', function (socket) {//소켓 연결
   });
 });
 });
+});
 function shifter(array){//상대방 연결 코드. 자동으로 다음 순서의 wantchat 클릭 이메일을 리턴
 	if(array[0]==undefined&&!(array.length==0)){
 	return chatconnect(array.shift());
