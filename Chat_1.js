@@ -13,6 +13,8 @@ var path = require('path');
 
 Sserver.listen(sport);
 Chatserver.listen(port);
+logger = new Logger('./chat.log');
+logger.info('This is info');
 
 
 app.use(express.static(path.join(__dirname, 'public')));
