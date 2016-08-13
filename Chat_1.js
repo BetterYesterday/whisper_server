@@ -8,6 +8,7 @@ var port = 20903;
 var sio = require('socket.io')(Sserver);
 var sport = 10902;
 var Logger = require('logger.js');
+var path = require('path');
 
 Sserver.listen(sport);
 Chatserver.listen(port);

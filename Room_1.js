@@ -10,6 +10,7 @@ var RoomConn = require('RoomListConnector.js');
 var Sserver = require('http').createServer(app);
 var sio = require('socket.io')(Sserver);
 var sport = 10901;
+var path = require('path');
 
 var mysql = require('mysql');
 var userListPool = mysql.createPool({

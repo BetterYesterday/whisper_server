@@ -4,6 +4,7 @@ var app = express();
 var Pushserver = require('http').createServer(app);
 var io = require('socket.io')(Pushserver);
 var port = 20904;
+var path = require('path');
 //server connection
 Pushserver.listen(port);
 var cio = require('socket.io-client');
