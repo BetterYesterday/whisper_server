@@ -5,8 +5,7 @@ var Roomserver = require('http').createServer(app);
 var io = require('socket.io')(Roomserver);
 var port = 20902;
 //server connection
-var Logger = require('logger.js');
-var RoomConn = require('RoomListConnector.js');
+var Logger = require('./logger.js');
 var Sserver = require('http').createServer(app);
 var sio = require('socket.io')(Sserver);
 var sport = 10901;
@@ -103,11 +102,13 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 						/*	userListPool.query('INSERT ')
 						/*RoomConn.write("./Rooms/"+socket.id,now.split().push(roomname).shifter().join(),function(err){
 							if(err){logger.error("write ERROR!!! "+socket.id);}*/
-
+							if(ddddata==true){
 							userListPool.query('UPDATE RoomCount SET Point=date_format(now(),"%Y%m%d%H%i%s") WHERE Email = ?',[socket.id],function(){
 									ssocket.off(socket.id);
 
-							});
+							});} else{
+								sssocket.off(socket.id);
+							}
 					/*	});
 					  	RoomConn.write("./Rooms/"+priority_arr[circular].Email,now.split().push(roomname).shifter().join(),function(err){
 							if(err){logger.error("write ERROR!!! "+priority_arr[circular].Email);}
