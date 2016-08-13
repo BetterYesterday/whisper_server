@@ -10,7 +10,6 @@ var RoomConn = require('RoomListConnector.js');
 var Sserver = require('http').createServer(app);
 var sio = require('socket.io')(Sserver);
 var sport = 10901;
-Sserver.listen(sport);
 
 var mysql = require('mysql');
 var userListPool = mysql.createPool({
@@ -19,11 +18,13 @@ var userListPool = mysql.createPool({
 	password: 'Despair$667',
 	database: 'UserList'
 });
+var filedir = '/home/ubuntu/ChatRooms/'
 //chat.js는 채팅방 들어가있을때만 연결됨.따라서 메시지 수신은 여기서 해야함.
 
 logger = new Logger('room.log');
 
 Roomserver.listen(port);
+Sserver.listen(sport);
 
 // Routing
 app.use(express.static(path.join(__dirname, 'public')));
@@ -32,14 +33,13 @@ var roomname=0;
 var circular=0;
 var priority_arr=new Array();
 setInterval(function(){
-	userListPool.query('SELECT * FROM RoomCount ORDER BY Point ASC;'function(err,rows){//우선순위 받아옴
+	userListPool.query('SELECT * FROM RoomCount ORDER BY Point ASC;'function(err,rows){//우선순위 받아옴(작은것부터(오름차순))
 		for(circular=0;rows[circular].Point<0;circular++){
 
 		}
 		priority_arr=rows;
 	});
 }, 60000);
-Sserver.listen(sport);
 sio.on('connection',function(ssocket){//Push에 연결
 	ssocket.on('disconnect',function(){
 		logger.error('push.js disconnected');
@@ -89,8 +89,8 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 				if(dmdkdk.status){//랜덤 방 매칭
 				roomname++;
 				for(;priority_arr[circular]==undefined;circular++){}
- 					ssocket.emit(priority_arr[circular].Email,{roomname:roomname,message:dmdkdk.message});//푸쉬에서 룸네임을 전송 명령
-	 					ssocket.emit(socket.id,{roomname:roomname,message:"NULL"});
+ 					ssocket.emit(priority_arr[circular].Email,{roomname:roomname,message:dmdkdk.message,Isend:false});//푸쉬에서 룸네임을 전송 명령
+	 					ssocket.emit(socket.id,{roomname:roomname,message:dmdkdk.message,Isend:true});
 
 						var timerid1 = setTimeout(function(){
 								ssocket.off(socket.id,function(){});
@@ -99,18 +99,19 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 						ssocket.on(socket.id,function(dddata){
 
 							clearTimeout(timerid1);
-						RoomConn.write("./Rooms/"+socket.id,now.split().push(roomname).shifter().join(),function(err){
-							if(err){logger.error("write ERROR!!! "+socket.id);}
+						//	userListPool.query('INSERT ')
+						/*RoomConn.write("./Rooms/"+socket.id,now.split().push(roomname).shifter().join(),function(err){
+							if(err){logger.error("write ERROR!!! "+socket.id);}*/
 
 							userListPool.query('UPDATE RoomCount SET Point=date_format(now(),"%Y%m%d%H%i%s") WHERE Email = ?',[socket.id],function(){
 
 							});
-						});
-						RoomConn.write("./Rooms/"+priority_arr[circular].Email,now.split().push(roomname).shifter().join(),function(err){
-							if(err){logger.error("write ERROR!!! "+priority_arr[circular].Email);}
+					//	});
+					/*	RoomConn.write("./Rooms/"+priority_arr[circular].Email,now.split().push(roomname).shifter().join(),function(err){
+							if(err){logger.error("write ERROR!!! "+priority_arr[circular].Email);}*/
 
 						});
-					});
+				//	});
 
 					},dmdkdkdk.minute);
 					userListPool.query('UPDATE RoomCount SET Point=date_format(now(),"%Y%m%d%H%i%s") WHERE Email = ?',[priority_arr[circular].Email],function(){

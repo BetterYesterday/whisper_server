@@ -25,17 +25,24 @@ dsocket.on('connect',function(data){
 dsocket.on('disconnect',function(data){
 
 });
+var v = new Array();
 io.sockets.on('connection',function(socket){
-  socket.on('login',function(data){
+  socket.on('login',function(data){//Email,pushkey,roomarr
+    if(!data.roomarr.length){
+      for(var i=0;i<data.roomarr.length;i++){
+        socket.join(data.roomarr[i]);
+      }
+    }
     csocket.on(socket.id,function(cdata){//새로운 방 만들기 첫메시지
-      socket.emit()
+      socket.emit('newmessage',{roomname:cdata.roomname,message:cdata.message,Isend:cdata.Isend});
     });
-    dsocket.on(socket.id,function(ddata){//방에 메시지 보내기
 
-    });
   });
 });
+dsocket.on(socket.id,function(ddata){//방에 메시지 보내기
+  io.to(ddata.roomname).emit('message',{roomname:cdata.roomname,message:cdata.message,Isend:false});
 
+});
 function shifter(array){//상대방 연결 코드. 자동으로 다음 순서의 wantchat 클릭 이메일을 리턴
 	if(array[0]==undefined&&!(array.length==0)){
 	return chatconnect(array.shift());
