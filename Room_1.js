@@ -94,27 +94,27 @@ io.sockets.on('connection', function (socket) {//소켓 연결
 	 					ssocket.emit(socket.id,{roomname:roomname,message:dmdkdk.message,Isend:true});
 
 						var timerid1 = setTimeout(function(){
-								ssocket.off(socket.id,function(){});
+								ssocket.off(socket.id);
 
 						},8000);
 						ssocket.on(socket.id,function(dddata){
 
 							clearTimeout(timerid1);
-						//	userListPool.query('INSERT ')
+						/*	userListPool.query('INSERT ')
 						/*RoomConn.write("./Rooms/"+socket.id,now.split().push(roomname).shifter().join(),function(err){
 							if(err){logger.error("write ERROR!!! "+socket.id);}*/
 
 							userListPool.query('UPDATE RoomCount SET Point=date_format(now(),"%Y%m%d%H%i%s") WHERE Email = ?',[socket.id],function(){
+									ssocket.off(socket.id);
 
 							});
-					//	});
-					/*	RoomConn.write("./Rooms/"+priority_arr[circular].Email,now.split().push(roomname).shifter().join(),function(err){
-							if(err){logger.error("write ERROR!!! "+priority_arr[circular].Email);}*/
+					/*	});
+					  	RoomConn.write("./Rooms/"+priority_arr[circular].Email,now.split().push(roomname).shifter().join(),function(err){
+							if(err){logger.error("write ERROR!!! "+priority_arr[circular].Email);}
 
-						});
-				//	});
+						});*/
+				  	});
 
-					},dmdkdkdk.minute);
 					userListPool.query('UPDATE RoomCount SET Point=date_format(now(),"%Y%m%d%H%i%s") WHERE Email = ?',[priority_arr[circular].Email],function(){
 
 					});
