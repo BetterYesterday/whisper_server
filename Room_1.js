@@ -21,7 +21,7 @@ var userListPool = mysql.createPool({
 var filedir = '/home/ubuntu/ChatRooms/'
 //chat.js는 채팅방 들어가있을때만 연결됨.따라서 메시지 수신은 여기서 해야함.
 
-logger = new Logger('room.log');
+logger = new Logger('./room.log');
 
 Roomserver.listen(port);
 Sserver.listen(sport);
@@ -54,9 +54,11 @@ io.sockets.on('connection', function (socket) {//소켓 연결
   userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',userdata_from.Email,function(err,rows) {
     if (err||!rows[0].isConnect) {
 			socket.emit('chat_message',{roomstatus:"ERR"});
+			logger.info('Error 1');
 			//Logger써서 에러출력
 		} else if(userdata_from.key != rows[0].isConnect){
 			socket.emit('chat_message',{roomstatus:"Canceled"});
+			logger.info('Error 2');
 			//로그인 실패(공격시도) -> 해당 ip 차단(일시적)
 		} else{
 			socket.id=userdata_from.Email;
