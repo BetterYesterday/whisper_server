@@ -30,7 +30,7 @@ io.sockets.on('connection',function(socket){
     csocket.on(socket.id,function(cdata){//새로운 방 만들기 첫메시지
       socket.emit()
     });
-    csocket.on(socket.id,function(ddata){//방에 메시지 보내기
+    dsocket.on(socket.id,function(ddata){//방에 메시지 보내기
 
     });
   });
