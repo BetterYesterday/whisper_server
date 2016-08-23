@@ -1,203 +1,61 @@
-// Setup
+
 var express = require('express');
+var http = require('http');
+var path = require('path');
+
 var app = express();
-var Roomserver = require('http').createServer(app);
-var io = require('socket.io')(Roomserver);
-var port = 20902;
-//server connection
-var Sserver = require('http').createServer(app);
-var sio = require('socket.io')(Sserver);
-var sport = 10901;
-Sserver.listen(sport);
-
-var redis = require('redis');
-var redisclient = redis.createClient();
-
-var mysql = require('mysql');
-var userListPool = mysql.createPool({
-	host: 'localhost',
-	user: 'root',
-	password: 'Despair$667',
-	database: 'UserList'
-});
-//chat.js는 채팅방 들어가있을때만 연결됨.따라서 메시지 수신은 여기서 해야함.
-
-logger = new Logger('room.log');
-
-Roomserver.listen(port);
-
-// Routing
 app.use(express.static(path.join(__dirname, 'public')));
 
-redisclient.on('error',function(err){
-	console.log('Error'+err);
-	logger.error('redis error');
+var httpServer =http.createServer(app).listen(3000, function(req,res){
+    console.log('Socket IO server has been started');
 });
-var Ssocket=null;
-Sserver.listen(port);
-sio.on('connection',function(socket){
-	Ssocket=1;
-	socket.on('disconnect',function(){
-		logger.error('chat.js disconnected');
-		Ssocket=0;
-	});
-});
-var people = new Array();
-io.sockets.on('connection', function (socket) {//소켓 연결
-	//on:메시지 받기
-	//emit:메시지 전송
-	socket.emit('chat_message',{message:'Room_Connected'});
-	var data;
-	socket.on('sign_in',function(userdata_from){
-		data = {
-		useremail: userdata_from[0],
-		userkey: userdata_from[1]
-	}
-	userListPool.query('SELECT * FROM UserInfo WHERE Email = ?',data.useremail,function(err,rows) {
-		var poolresult=rows;//이거 필요한지?(테스트해봐야)
+// upgrade http server to socket.io server
+var io = require('socket.io').listen(httpServer);
 
-		if (err||!rows[0].isConnect) {
-			//Logger써서 에러출력
-		} else if(data.userkey != rows[0].isConnect){
-			//로그인 실패(공격시도) -> 해당 ip 차단(일시적)
-		} else{
-		socket.id = data.useremail;
-		socket.key = data.userkey;
-		socket.emit('chat_message',{connect_status:1, duck:poolresult[0].countDuck,roomcount:poolresult[0].countRoom});
-		socket.emit('chat_message',{room1:poolresult[0].Room_1, room2:poolresult[0].Room_2, room3:poolresult[0].Room_3, room4:poolresult[0].Room_4, room5:poolresult[0].Room_5})
-		socket.on('room',function(command){
-			var ifwantchat=true;
-			var timercontinues=false;
-			var wantchat;
-			if(!(rows[0].countRoom>4)){
-			if(command==0){
-				ifwantchat=false;//사용자가 장난치는걸 막음.(쿼리문 성능 관련)
-				if(wantchat){
-					userListPool.query('UPDATE isConnect FROM UserInfo SET isWantChat =? WHERE Email =?',[0,socket.id],function(){
+var socket_ids = [];
+var count = 0;
 
-					redisclient.get("isWantChatList",function(err,reply){
-						var tempreply=reply.delete(reply.indexOf(socket.id));
+function registerUser(socket,nickname){
+    // socket_id와 nickname 테이블을 셋업
+    socket.get('nickname',function(err,pre_nick){
+        if(pre_nick != undefined ) delete socket_ids[pre_nick];
+        socket_ids[nickname] = socket.id
+        socket.set('nickname',nickname,function(){
+            io.sockets.emit('userlist',{users:Object.keys(socket_ids)});
+        });
 
-						if(reply=null||reply==undefined){
-							tempreply=new Array();
-						}
-						else{
-							tempreply==reply;
-						}
-						tempreply[tempreply.length]=data.useremail
-					redisclient.set("isWantChatList",data.useremail);
-						wantchat=0;
-					});
-
-					});
-				}
-			}
-			if(command==1){//wantchat박스 활성화(언제든 괜찮)
-				ifwantchat=true;
-				if(!timercontinues){//타이머 진행 중 중복 실행을 막음
-					timercontinues=true;
-				settimeout(function(){
-					if(!ifwantchat){
-						break;
-					}
-					userListPool.query('UPDATE isConnect FROM UserInfo SET isWantChat =? WHERE Email =?',[1,socket.id],function(){
-					redisclient.get("isWantChatList",function(err,reply){
-						if(reply=null||reply==undefined){
-						var tempreply=new Array();
-					}
-					else{
-						tempreply==reply;
-					}
-					tempreply=tempreply.push(socket.id);
-					redisclient.set("isWantChatList",tempreply);//안되면 join으로 String형태로 바꿔넣음
-					timercontinues=false;
-					wantchat=1;
-					});
-
-					});
-				},3000);
-			}
-		}
+    });
 }
-		if(command==2){//nowchat버튼 클릭시(지금 채팅)
-			redisclient.get("isWantChatList",function(err,reply){//reply[0]을 연결
-				var tempreply=new Array();
-					function chatconnect(array){//상대방 연결 코드. 자동으로 다음 순서의 wantchat 클릭 이메일을 리턴
-						if(array[0]==undefined&&!(array.length==0)){
-						return chatconnect(array.shift());
-					} else if(array[0]==null){
 
-					} else if(array.length==0){
-						socket.emit('chat_message',{return:"no waiting person"});
-					} else{
-					}
-					return array;
-					}
-					tempreply = chatconnect(reply);
-					if(!(tempreply==reply)){
-						redisclient.set("isWantChatList",tempreply);
-					}
-						if(Ssocket){
+io.sockets.on('connection',function(socket){
+    socket.emit('new',{nickname:'GUEST-'+count});
+    registerUser(socket,'GUEST-'+count);
+    count++;
 
-							redisclient.get("isWantChatList",function(err,reply){
-								if(err){
-									logger.error('chatconnection error');
-									break;
-								}
-									var roomname;
-									redisclient.get("Roomcode",function(err,replys){//roomname.codename이 어디까지 세어졋나?
-										if(err||replys==undefined||replys==null){
-											replys=0;
-										}
-										replys++;
-										roomname.codename=replys;
-										redisclient.set("Roomcode",replys);
-									});
-								if(!rows[0].Room_1 || rows[0].Room_1==null|| rows[0].Room_1==undefined){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_1 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
+    socket.on('changename',function(data){
+        registerUser(socket,data.nickname);
+    });
+    socket.on('disconnect',function(data){
+        socket.get('nickname',function(err,nickname){
+            if(nickname != undefined){
+                delete socket_ids[nickname];
+                io.sockets.emit('userlist',{users:Object.keys(socket_ids)});
 
-									});
-									roomname.num="Room_1";
-								}else if(!rows[0].Room_2 || rows[0].Room_2==null|| rows[0].Room_1==undefined){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_2 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
+            }// if
+        });
+     });
+    socket.on('send_msg',function(data){
+        socket.get('nickname',function(err,nickname){
 
-									});
-									roomname.num="Room_2";
-
-								}else if(!rows[0].Room_3 || rows[0].Room_3==null|| rows[0].Room_1==undefined){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_3 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
-
-									});
-									roomname.num="Room_3";
-
-								}else if(!rows[0].Room_4 || rows[0].Room_4==null|| rows[0].Room_1==undefined){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_4 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
-
-									});
-									roomname.num="Room_4";
-
-								}else if(!rows[0].Room_5 || rows[0].Room_5==null|| rows[0].Room_1==undefined){
-									userListPool.query('UPDATE isConnect FROM UserInfo SET Room_5 =? WHERE Email =? SET countRoom =?',[roomname.codename,socket.id,(rows[0].countRoom+1)],function(){
-
-									});
-									roomname.num="Room_5";
-								}
-
-								socket.emit('chat_message',{return:"connected",Num:roomname.num,code:roomname.codename});
-								sio.emit('connect_person',{Email:socket.id,Numname:roomname.num,Codename:roomname.codename,who:reply[0]});//1:wantchat리스트에서 뽑음/2:nowchat사람
-
-						});//
-					}
-
-			});
-		}else if(command==3){//방 나가기 버튼 클릭시
-			//상대방 id를 받아와서 redis에서 삭제 필요.
-		}
-		});
-		}
-
-
-			redisclient.set("MyRoomList",MyRoom);
-	});//쿼리문괄호
-	});
+            data.msg = nickname + ' : '+data.msg;
+            if(data.to =='ALL') socket.broadcast.emit('broadcast_msg',data); // 자신을 제외하고 다른 클라이언트에게 보냄
+            else{
+                socket_id = socket_ids[data.to];
+                if(socket_id != undefined){
+                    io.sockets.socket(socket_id).emit('broadcast_msg',data);
+                }// if
+            }
+            socket.emit('broadcast_msg',data);
+        });
+    });
 });
