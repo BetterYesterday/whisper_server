@@ -7,7 +7,7 @@ var path = require('path');
 var port = 20911;
 
 var mysql = require('mysql');
-var userListPool = mysql.createPool({	
+var userListPool = mysql.createPool({
 	host: 'localhost',
 	user: 'root',
 	password: 'Despair$667',
@@ -30,7 +30,7 @@ io.sockets.on('connection', function (socket) {
 				check_status1 = 0;
 			}else{
 				check_status1 = 1;
-			}	
+			}
 			console.log(result);
 		});
 		userListPool.query('INSERT INTO UserCustom (Email) VALUES (?)',Email,function(err,result){
@@ -38,16 +38,16 @@ io.sockets.on('connection', function (socket) {
 				check_status2 = 0;
 			}else{
 				check_status2 = 1;
-			}	
+			}
 		});
 		userListPool.query('INSERT INTO RoomCount (Emailm) VALUES (?)',Email,function(err,result){
 			if(err){
 				check_status3 = 0;
 			}else{
 				check_status3 = 1;
-			}		
+			}
 		});
-		if(check_status1==1&&check_status2==1&&check_status==1){
+		if(check_status1==0||check_status2==0||check_status3==0){
 			var key = random();
 			userListPool.query('UPDATE UserInfo SET isConnect = ? WHERE Email = ?',[key,Email],function(err,result){
 				socket.emit('sign_up',{
@@ -80,7 +80,7 @@ io.sockets.on('connection', function (socket) {
 					check_status: 0,
 					push_email: Email
 				});
-			}	
+			}
 		});
 	});
 });
